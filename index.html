@@ -560,6 +560,7 @@ function resetCars() {
 function startRun() {
   buildTrack(); resetCars();
   Object.assign(G, { state: 'count', pos: 0, x: 0, speed: 0, time: 45, score: 0, dist: 0, near: 0, crashes: 0, maxKmh: 0, turboUses: 0, turbo: .35, boost: 0, coins: 0, shake: 0, flash: 0, msgs: [], lean: 0, steer: 0, count: 3.2, endT: 0, lastGate: -1, gear: 0, rpm: IDLE, parts: [] });
+  G.hintT0 = G.t; G.hints = store.get('hints', 0); store.set('hints', G.hints + 1);
   show(null); $('turbo').classList.add('on'); $('brake').classList.add('on'); AU.init(); AU.beep(false);
 }
 function msg(text, col, big) { G.msgs.push({ text, col: col || '#fff', t: 0, big }); if (G.msgs.length > 4) G.msgs.shift(); }
@@ -898,6 +899,22 @@ function brandBand(y, h) {
   ctx.save(); ctx.translate(W / 2, y + h / 2 + 1); ctx.transform(1, 0, -.2, 1, 0, 0);
   ctx.font = `italic 900 ${h * .72}px "Saira Condensed", sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff'; ctx.fillText('PARIS EST MOTO', 0, 0); ctx.restore();
 }
+/* aide à la prise en main : deux pouces en transparence, un de chaque côté,
+   pendant le compte à rebours et les premières secondes (3 premières parties) */
+function thumbsHint() {
+  if (!(G.hints < 3) || (G.state !== 'count' && G.state !== 'run')) return;
+  const el = G.t - G.hintT0, a = clamp(1 - (el - 7.2) / 1.2, 0, 1) * clamp(el / .4, 0, 1); if (a <= 0) return;
+  const y = H - 158, sway = Math.sin(G.t * 3.2) * 16, xl = W * .17, xr = W * .83;
+  ctx.save(); ctx.globalAlpha = .5 * a; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = '66px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
+  ctx.save(); ctx.translate(xl + sway, y); ctx.scale(-1, 1); ctx.fillText('👍', 0, 0); ctx.restore();
+  ctx.fillText('👍', xr + sway, y);
+  ctx.restore();
+  ctx.globalAlpha = a;
+  txt('‹  GLISSE POUR TOURNER  ›', W / 2, H - Math.max(66, H * .08) - Math.min(W, H * .62) / 540 * 360, 17, '#fff', 'center', 800, true, true);
+  txt('FREIN ↓', xl, y + 46, 13, '#fff', 'center', 800, false, true); txt('TURBO ↓', xr, y + 46, 13, '#fff', 'center', 800, false, true);
+  ctx.globalAlpha = 1;
+}
 function hud() {
   const bandH = 30; brandBand(0, bandH); const y0 = bandH;
   const pg = ctx.createLinearGradient(0, y0, 0, y0 + 62); pg.addColorStop(0, 'rgba(0,0,0,.62)'); pg.addColorStop(1, 'rgba(0,0,0,.25)'); ctx.fillStyle = pg; ctx.fillRect(0, y0, W, 62);
@@ -916,6 +933,7 @@ function hud() {
   $('turbo').classList.toggle('empty', G.turbo < 1);
   let my = H * .36;
   for (const m of G.msgs) { const a = 1 - Math.max(0, (m.t - .9) / .5); ctx.globalAlpha = Math.max(0, a); txt(m.text, W / 2, my - m.t * 30, m.big ? 40 : 28, m.col, 'center', 900, true, true); ctx.globalAlpha = 1; my += m.big ? 46 : 34; }
+  thumbsHint();
   if (G.state === 'count') { const n = Math.ceil(G.count), f = G.count % 1; txt('PARIS EST MOTO', W / 2, H * .3, 30, '#fff', 'center', 900, true, true); txt(n > 0 ? String(n) : 'GO', W / 2, H * .42, 110 + f * 40, '#fff', 'center', 900, true, true); }
 }
 
