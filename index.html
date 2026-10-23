@@ -73,6 +73,8 @@
   @keyframes pulse { 50% { transform: scale(1.04); box-shadow: 0 0 40px rgba(255,40,40,.45); } }
   #gate .tap { margin-top: 22px; font: 800 18px/1 'Saira Condensed', sans-serif; letter-spacing: .2em; text-transform: uppercase; animation: blink 1.2s steps(2) infinite; }
   @keyframes blink { 50% { opacity: .35; } }
+  .live { color: #6dff9a; font-weight: 700; animation: blink 1.6s steps(2) infinite; }
+  small.d { font: 500 10px/1 Inter, sans-serif; color: #aaa; letter-spacing: 0; margin-left: 4px; text-transform: none; }
   .legal { margin: 10px 0 0; font: 500 11px/1.4 Inter, sans-serif; color: #a8a8a8; }
   .legal a, .check a, .foot a { color: #ffb3b3; }
   .check span { flex: 1; }
@@ -109,6 +111,7 @@
   <div class="how"><div><b>Glisse ← →</b><br>pour tourner</div><div><b>Frein</b><br>avant les virages</div><div><b>Turbo</b><br>jauge pleine</div><div><b>Checkpoints</b><br>+8 s</div></div>
   <button class="btn" id="play">Lancer le run</button>
   <button class="btn ghost" id="podBtn">Voir le podium du mois</button>
+  <p class="sub" id="leader" style="min-height:18px"></p>
   <div class="best" id="bestTxt"></div>
   <div class="foot"><a href="reglement.html">Règlement</a> · <a href="confidentialite.html">Confidentialité</a> · <a href="mentions-legales.html">Mentions légales</a></div>
 </section>
@@ -155,6 +158,7 @@
 <section id="podium" class="screen veil">
   <div class="kicker">Paris Est Moto · classement</div>
   <h1 class="title" style="font-size:44px">Podium<br><span id="podMonth">du mois</span></h1>
+  <p class="sub" id="podEnd"></p>
   <div class="podium3" id="pod3"></div>
   <div class="board"><ol id="podList"></ol><p class="sub" id="podCount"></p></div>
   <button class="btn" id="podPlay">Lancer le run</button>
@@ -730,7 +734,7 @@ function drawSeg(p1, p2, dark, fogA, n) {
   if (fogA > 0) { ctx.fillStyle = `rgba(240,196,170,${fogA})`; ctx.fillRect(0, p2.s.y, W, p1.s.y - p2.s.y); }
 }
 function drawBarrier(s) {
-  const p1 = s.p1.s, p2 = s.p2.s; if (s.p1.c.z <= camDepth || p2.y >= s.clip || p1.y - p2.y < 1.5) return;
+  const p1 = s.p1.s, p2 = s.p2.s; if (s.p1.c.z <= camDepth || p2.y >= s.clip || p1.y > s.clip + 2 || p1.y - p2.y < 1.5) return;
   const h1 = p1.scale * 210 * W / 2, h2 = p2.scale * 210 * W / 2;
   ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, s.clip); ctx.clip();
   for (const side of [-1, 1]) {
@@ -744,7 +748,9 @@ function drawBarrier(s) {
 function drawSprite(spr, scale, x, y, ox, clipY, flip) {
   const dw = spr.ww * scale * W / 2, dh = dw * spr.img.height / spr.img.width, dx = x + dw * ox, dy = y - dh;
   if (dw < 1 || dx > W || dx + dw < 0) return;
-  const clipH = clipY ? Math.max(0, dy + dh - clipY) : 0; if (clipH >= dh) return;
+  const clipH = clipY ? Math.max(0, dy + dh - clipY) : 0;
+  /* objet surtout caché derrière une bosse : on ne dessine pas son sommet flottant (arches, tribunes) */
+  if (clipH >= dh || (clipH > dh * .35 && dw > W * .25)) return;
   const sh = spr.img.height - spr.img.height * clipH / dh;
   if (flip) { ctx.save(); ctx.translate(dx + dw, dy); ctx.scale(-1, 1); ctx.drawImage(spr.img, 0, 0, spr.img.width, sh, 0, 0, dw, dh - clipH); ctx.restore(); }
   else ctx.drawImage(spr.img, 0, 0, spr.img.width, sh, dx, dy, dw, dh - clipH);
@@ -911,7 +917,8 @@ function hud() {
 /* =====================================================================
    ÉCRANS
    ===================================================================== */
-function show(id) { for (const s of document.querySelectorAll('.screen')) s.classList.toggle('on', s.id === id); $('gear').style.display = PITCH && (id === 'start' || id === 'end') ? 'block' : 'none'; }
+function show(id) {
+  if (id === 'start') { refreshLeader(); livePodium(refreshLeader); } for (const s of document.querySelectorAll('.screen')) s.classList.toggle('on', s.id === id); $('gear').style.display = PITCH && (id === 'start' || id === 'end') ? 'block' : 'none'; }
 const MODELS = [
   { n: 'Streetfighter V4', t: 'Hooligan élégant : tu frôles tout, tu ne lâches rien. Le naked le plus radical de la gamme est fait pour toi.', ok: s => s.near >= 6 },
   { n: 'Panigale V4', t: 'Pur racing : turbo dès que possible, vitesse de pointe au plafond. Ta place est sur circuit.', ok: s => s.turboUses >= 2 && s.maxKmh >= 330 },
@@ -941,20 +948,30 @@ $('share').addEventListener('click', async () => {
 });
 /* ---------------- podium partagé (API Paris Est Moto) ---------------- */
 const API = 'https://paris-est-moto-api.alanducatez1.workers.dev';
+/* le podium et le leader se rafraîchissent toutes les 5 s quand ils sont à l'écran */
 const POLICY_VERSION = '2026-10';
 const escH = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 let myId = store.get('myIds', []);
 async function fetchPodium() {
   const r = await fetch(API + '/api/podium', { cache: 'no-store' }); if (!r.ok) throw new Error(r.status); return r.json();
 }
-function rows(top, n) { return top.slice(0, n).map((b, i) => `<li class="${myId.includes(b.id) ? 'me' : ''}"><span>${i + 1}. ${escH(b.prenom)}</span><span>${b.score.toLocaleString('fr-FR')} pts</span></li>`).join(''); }
+const fmtD = iso => iso ? new Date(iso).toLocaleString('fr-FR', { timeZone: 'Europe/Paris', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(' ', ' · ') : '';
+function rows(top, n, from) { return top.slice(from || 0, n).map((b, i) => `<li class="${myId.includes(b.id) ? 'me' : ''}"><span>${i + 1 + (from || 0)}. ${escH(b.prenom)} <small class="d">${fmtD(b.createdAt)}</small></span><span>${b.score.toLocaleString('fr-FR')} pts</span></li>`).join(''); }
+function daysLeft() { const p = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()).split('-').map(Number); const last = new Date(Date.UTC(p[0], p[1], 0)).getUTCDate(); return last - p[2]; }
+let podTimer = null;
+function livePodium(fn) { clearInterval(podTimer); podTimer = setInterval(() => { const on = document.querySelector('.screen.on'); if (document.hidden || !on || !['podium', 'thanks', 'start'].includes(on.id)) return; fn(); }, 5000); }
+async function refreshLeader() { try { const d = await fetchPodium(); const t = d.top[0]; $('leader').innerHTML = t ? `<span class="live">● EN DIRECT</span> Leader de ${MONTHS[new Date().getMonth()]} : <b>${escH(t.prenom)}</b> · ${t.score.toLocaleString('fr-FR')} pts` : `<span class="live">● EN DIRECT</span> Personne au podium : à toi de jouer !`; } catch (e) { $('leader').textContent = ''; } }
 async function showPodium() {
   show('podium'); $('podMonth').textContent = MONTHS[new Date().getMonth()];
   $('pod3').innerHTML = ''; $('podList').innerHTML = '<li><span>Chargement…</span></li>'; $('podCount').textContent = '';
+  const j = daysLeft(); $('podEnd').innerHTML = `<span class="live">● EN DIRECT</span> ${j === 0 ? 'Dernier jour du challenge !' : `Fin du challenge dans ${j} jour${j > 1 ? 's' : ''}`} · seuls les scores de ${MONTHS[new Date().getMonth()]} comptent`;
+  await drawPodium(); livePodium(drawPodium);
+}
+async function drawPodium() {
   try {
     const d = await fetchPodium(), t = d.top;
-    $('pod3').innerHTML = [[1, 'p2'], [0, 'p1'], [2, 'p3']].map(([i, c]) => t[i] ? `<div class="p ${c}"><div class="n">${escH(t[i].prenom)}</div><div class="s">${t[i].score.toLocaleString('fr-FR')} pts</div><div class="b">${i + 1}</div></div>` : `<div class="p ${c}"><div class="n">—</div><div class="s">&nbsp;</div><div class="b">${i + 1}</div></div>`).join('');
-    $('podList').innerHTML = t.length > 3 ? rows(t, 10).split('</li>').slice(3).join('</li>') : (t.length ? '' : '<li><span>Personne encore : prends la première place !</span></li>');
+    $('pod3').innerHTML = [[1, 'p2'], [0, 'p1'], [2, 'p3']].map(([i, c]) => t[i] ? `<div class="p ${c}"><div class="n">${escH(t[i].prenom)}</div><div class="s">${t[i].score.toLocaleString('fr-FR')} pts<br><small class="d">${fmtD(t[i].createdAt)}</small></div><div class="b">${i + 1}</div></div>` : `<div class="p ${c}"><div class="n">—</div><div class="s">&nbsp;</div><div class="b">${i + 1}</div></div>`).join('');
+    $('podList').innerHTML = t.length > 3 ? rows(t, 10, 3) : (t.length ? '' : '<li><span>Personne encore : prends la première place !</span></li>');
     $('podCount').textContent = d.players ? `${d.players} pilote${d.players > 1 ? 's' : ''} inscrit${d.players > 1 ? 's' : ''} ce mois-ci` : '';
   } catch (e) { $('podList').innerHTML = '<li><span>Podium indisponible (pas de connexion)</span></li>'; }
 }
@@ -983,7 +1000,8 @@ $('lead').addEventListener('submit', async e => {
   $('tTxt').textContent = G.intent === 'essai' ? `Paris Est Moto te recontacte pour ton essai « ${$('fModel').value} ».` : 'Ton score est inscrit au podium du mois. Le meilleur score à la fin du mois remporte le lot !';
   $('board').innerHTML = '<li><span>Chargement…</span></li>'; $('boardCount').textContent = '';
   show('thanks');
-  try { const d = await fetchPodium(); const i = d.top.findIndex(b => myId.includes(b.id)); $('board').innerHTML = rows(d.top, 5); $('boardCount').textContent = i >= 5 ? `Ta place : ${i + 1}e sur ${d.players}` : `${d.players} pilote${d.players > 1 ? 's' : ''} ce mois-ci`; } catch (x) { $('board').innerHTML = ''; }
+  const upd = async () => { try { const d = await fetchPodium(); const i = d.top.findIndex(b => myId.includes(b.id)); $('board').innerHTML = rows(d.top, 5); $('boardCount').innerHTML = `<span class="live">● EN DIRECT</span> ` + (i >= 5 ? `Ta place : ${i + 1}e sur ${d.players}` : `${d.players} pilote${d.players > 1 ? 's' : ''} ce mois-ci`); } catch (x) {} };
+  await upd(); livePodium(upd);
 });
 function renderChips() {
   $('chips').innerHTML = PRIZES.map((p, i) => `<button class="chip ${p === CFG.prize ? 'sel' : ''}" data-i="${i}">${p}</button>`).join('');
