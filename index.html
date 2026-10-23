@@ -361,7 +361,8 @@ function addSeg(curve, y) { const n = segs.length; segs.push({ i: n, p1: { w: { 
 const eIn = (a, b, p) => a + (b - a) * p * p;
 const eInOut = (a, b, p) => a + (b - a) * (-Math.cos(p * Math.PI) / 2 + .5);
 function addRoad(enter, hold, leave, curve, y) {
-  const sy = lastY(), ey = sy + y * SEG, total = enter + hold + leave;
+  const total = enter + hold + leave; y = clamp(y, -.22 * total, .22 * total); /* pente max ≈ 20° */
+  const sy = lastY(), ey = sy + y * SEG;
   for (let n = 0; n < enter; n++) addSeg(eIn(0, curve, n / enter), eInOut(sy, ey, n / total));
   for (let n = 0; n < hold; n++) addSeg(curve, eInOut(sy, ey, (enter + n) / total));
   for (let n = 0; n < leave; n++) addSeg(eInOut(curve, 0, n / leave), eInOut(sy, ey, (enter + hold + n) / total));
@@ -369,14 +370,17 @@ function addRoad(enter, hold, leave, curve, y) {
 function buildTrack() {
   segs = []; const r = rnd(2026);
   addRoad(10, 50, 10, 0, 0);
+  /* relief borné : chaque bosse ramène vers l'altitude 0 (avant, les montées s'accumulaient
+     et la fin du circuit redescendait d'un coup : falaise visible au bouclage) */
+  const hill = range => clamp((r() - .5) * range - lastY() / SEG * .7, -40, 40);
   for (let k = 0; k < 40; k++) {
     const kind = r();
-    if (kind < .3) addRoad(25, 40 + r() * 40 | 0, 25, (r() < .5 ? -1 : 1) * (2 + r() * 3.5), (r() - .5) * 60);
-    else if (kind < .5) { addRoad(20, 20, 20, 2.6, 0); addRoad(20, 20, 20, -2.6, 20); }
-    else if (kind < .7) addRoad(30, 50, 30, 0, (r() - .5) * 90);
-    else addRoad(20, 30 + r() * 30 | 0, 20, (r() < .5 ? -1 : 1) * (1 + r() * 2), (r() - .3) * 70);
+    if (kind < .3) addRoad(25, 40 + r() * 40 | 0, 25, (r() < .5 ? -1 : 1) * (2 + r() * 3.5), hill(60));
+    else if (kind < .5) { addRoad(20, 20, 20, 2.6, hill(20)); addRoad(20, 20, 20, -2.6, hill(30)); }
+    else if (kind < .7) addRoad(30, 50, 30, 0, hill(80));
+    else addRoad(20, 30 + r() * 30 | 0, 20, (r() < .5 ? -1 : 1) * (1 + r() * 2), hill(60));
   }
-  addRoad(40, 40, 40, 0, -lastY() / SEG);
+  { const need = Math.ceil(Math.abs(lastY() / SEG) / .22 / 3) + 10; addRoad(need, need, need, 0, -lastY() / SEG); }
   trackLen = segs.length * SEG;
   const rs = rnd(77);
   segs[18].sprites.push({ k: 'arch', x: 0, center: true });
@@ -705,9 +709,10 @@ function quad(x1, y1, x2, y2, x3, y3, x4, y4, c) { ctx.fillStyle = c; ctx.beginP
 function drawSeg(p1, p2, dark, fogA, n) {
   const hh = p1.s.y - p2.s.y;
   /* segments écrasés (< 2,5 px) : une seule teinte, sinon moiré « pixelisé » à l'horizon */
-  if (hh < 2.5 && n > 70) {
+  const skew = Math.abs(p2.s.x - p1.s.x) > 6 * hh + 4;
+  if (n > 60 && (hh < 2.5 || skew)) {
     ctx.fillStyle = '#3f9039'; ctx.fillRect(0, p2.s.y, W, hh + .5);
-    quad(p1.s.x - p1.s.w * 1.1, p1.s.y, p1.s.x + p1.s.w * 1.1, p1.s.y, p2.s.x + p2.s.w * 1.1, p2.s.y + .5, p2.s.x - p2.s.w * 1.1, p2.s.y + .5, '#6a6a6e');
+    if (!skew) quad(p1.s.x - p1.s.w * 1.1, p1.s.y, p1.s.x + p1.s.w * 1.1, p1.s.y, p2.s.x + p2.s.w * 1.1, p2.s.y + .5, p2.s.x - p2.s.w * 1.1, p2.s.y + .5, '#6a6a6e');
     ctx.fillStyle = `rgba(240,196,170,${fogA})`; ctx.fillRect(0, p2.s.y, W, hh + .5); return;
   }
   ctx.fillStyle = dark ? '#3a8a36' : '#43963e'; ctx.fillRect(0, p2.s.y, W, hh);
@@ -745,6 +750,7 @@ function drawSprite(spr, scale, x, y, ox, clipY, flip) {
   else ctx.drawImage(spr.img, 0, 0, spr.img.width, sh, dx, dy, dw, dh - clipH);
 }
 function drawBackground() {
+  ctx.fillStyle = '#4a7a42'; ctx.fillRect(-20, -20, W + 40, H + 40); /* jamais de reste de l'image précédente */
   const hy = H * .5, k = clamp((45 - G.time) / 70, 0, 1);
   const g = ctx.createLinearGradient(0, 0, 0, hy);
   g.addColorStop(0, `rgb(${30 + 40 * k | 0},${58 - 18 * k | 0},${120 - 30 * k | 0})`); g.addColorStop(.62, `rgb(236,${150 - 25 * k | 0},${112 - 30 * k | 0})`); g.addColorStop(1, '#f8cf9f');
@@ -769,7 +775,7 @@ function drawBackground() {
   const hx = ((G.hillX * W * 4) % (W * 2) + W * 2) % (W * 2);
   for (const [col, amp, base] of [['#5f8a52', .02, .012], ['#4a7a42', .012, .004]]) {
     ctx.fillStyle = col;
-    for (let rep = -1; rep < 2; rep++) { ctx.beginPath(); ctx.moveTo(rep * W * 2 - hx, hy + 4); for (let i = 0; i <= 24; i++) ctx.lineTo(rep * W * 2 - hx + i * W * .0834, hy - H * base - Math.sin(i * 1.3 + amp * 100) * H * amp * .6 - Math.sin(i * .5) * H * amp * .5); ctx.lineTo(rep * W * 2 - hx + W * 2, hy + 4); ctx.fill(); }
+    for (let rep = -1; rep < 2; rep++) { ctx.beginPath(); ctx.moveTo(rep * W * 2 - hx, H); for (let i = 0; i <= 24; i++) ctx.lineTo(rep * W * 2 - hx + i * W * .0834, hy - H * base - Math.sin(i * 1.3 + amp * 100) * H * amp * .6 - Math.sin(i * .5) * H * amp * .5); ctx.lineTo(rep * W * 2 - hx + W * 2, H); ctx.fill(); }
   }
 }
 let frameNo = 0;
@@ -788,7 +794,7 @@ function render() {
     project(s.p2, G.x * RW - x - dx, py + CAMH, G.pos - (s.looped ? trackLen : 0), W, H);
     x += dx; dx += s.curve;
     if (s.p1.c.z <= camDepth || s.p2.s.y >= s.p1.s.y || s.p2.s.y >= maxy) continue;
-    drawSeg(s.p1, s.p2, s.dark, Math.min(.75, Math.pow(n / DRAW, 2.2) * 1.1), n);
+    drawSeg(s.p1, s.p2, s.dark, Math.min(.92, Math.pow(n / DRAW, 2) * 1.15), n);
     maxy = s.p1.s.y; s.seen = frameNo;
   }
   const flagFrame = Math.floor(G.t * 6) % 2;
@@ -802,7 +808,9 @@ function render() {
       const sc = s.p1.s.scale, X = s.p1.s.x + sc * o.x * RW * W / 2, Y = s.p1.s.y;
       if (o.k === 'coin') { drawSprite(SPR.coin, sc, X, Y - sc * 150 * W / 2 - Math.abs(Math.sin(G.t * 4 + s.i)) * sc * 60 * W / 2, -.5, s.clip); continue; }
       const spr = o.anim && flagFrame ? SPR.adrien2 : SPR[o.k];
+      if (o.center) { const near = clamp((n - 4) / 7, 0, 1); if (near <= 0) continue; ctx.globalAlpha = fade * near; }
       drawSprite(spr, sc, X, Y, o.center ? -.5 : o.x < 0 ? -1 : 0, s.clip, o.flip);
+      if (o.center) ctx.globalAlpha = fade;
     }
     for (const c of s.cars) {
       const t = ((c.z % SEG) + SEG) % SEG / SEG, sc = s.p1.s.scale + (s.p2.s.scale - s.p1.s.scale) * t;
