@@ -8,17 +8,17 @@
 <title>Paris Est Moto — le run du mois</title>
 <link rel="icon" href="assets/logo.png">
 <link rel="apple-touch-icon" href="assets/logo.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;700;800;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/fonts.css">
 <style>
   :root { --red: #cc0000; --red2: #ff2a2a; }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; height: 100%; overflow: hidden; background: #0c0c0c; color: #fff; font-family: Inter, system-ui, sans-serif; touch-action: none; -webkit-user-select: none; user-select: none; overscroll-behavior: none; }
   #c { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; display: block; }
-  .screen { position: fixed; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; padding: max(18px, env(safe-area-inset-top)) 20px max(18px, env(safe-area-inset-bottom)); text-align: center; z-index: 5; overflow-y: auto; touch-action: pan-y; }
+  .screen { position: fixed; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: flex-start; padding: max(18px, env(safe-area-inset-top)) 20px max(18px, env(safe-area-inset-bottom)); text-align: center; z-index: 5; overflow-y: auto; touch-action: pan-y; }
   .screen.on { display: flex; }
-  .veil { background: linear-gradient(180deg, rgba(10,10,10,.45) 0%, rgba(10,10,10,.8) 50%, rgba(10,10,10,.96) 100%); }
+  .screen > :first-child { margin-top: auto; } .screen > :nth-last-child(1 of :not(.foot)) { margin-bottom: auto; }
+  #form .title, #form .kicker { flex-shrink: 0; }
+  .veil { background: linear-gradient(180deg, rgba(10,10,10,.82) 0%, rgba(10,10,10,.8) 50%, rgba(10,10,10,.96) 100%); }
   .kicker { font: 700 13px/1 'Saira Condensed', sans-serif; letter-spacing: .28em; text-transform: uppercase; color: #ffb3b3; }
   .hero { width: 112px; height: 112px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.5); margin-bottom: 10px; }
   h1.title { margin: 6px 0 2px; font: italic 900 58px/.88 'Saira Condensed', sans-serif; text-transform: uppercase; letter-spacing: -.01em; }
@@ -73,6 +73,18 @@
   @keyframes pulse { 50% { transform: scale(1.04); box-shadow: 0 0 40px rgba(255,40,40,.45); } }
   #gate .tap { margin-top: 22px; font: 800 18px/1 'Saira Condensed', sans-serif; letter-spacing: .2em; text-transform: uppercase; animation: blink 1.2s steps(2) infinite; }
   @keyframes blink { 50% { opacity: .35; } }
+  .legal { margin: 10px 0 0; font: 500 11px/1.4 Inter, sans-serif; color: #a8a8a8; }
+  .legal a, .check a, .foot a { color: #ffb3b3; }
+  .check span { flex: 1; }
+  .ferr { min-height: 16px; margin: 8px 0 0; font: 600 12px/1.3 Inter, sans-serif; color: #ff8a8a; }
+  .podium3 { display: flex; align-items: flex-end; justify-content: center; gap: 6px; width: 100%; max-width: 360px; margin: 14px 0 4px; }
+  .podium3 .p { flex: 1; text-align: center; }
+  .podium3 .p .n { font: italic 800 17px/1.1 'Saira Condensed', sans-serif; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .podium3 .p .s { font: 600 12px/1.2 Inter, sans-serif; color: #ddd; margin-bottom: 4px; }
+  .podium3 .p .b { display: flex; align-items: flex-start; justify-content: center; padding-top: 6px; font: italic 900 30px/1 'Saira Condensed', sans-serif; clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%); }
+  .podium3 .p1 .b { height: 96px; background: linear-gradient(#e8b923, #a37c00); }
+  .podium3 .p2 .b { height: 70px; background: linear-gradient(#cfd2d8, #8b8f97); color: #222; }
+  .podium3 .p3 .b { height: 52px; background: linear-gradient(#d0864a, #8a4f22); }
   @media (min-height: 760px) { h1.title { font-size: 66px; } }
   @media (min-width: 700px) { #c { left: 50%; width: 430px; transform: translateX(-50%); } .screen { left: 50%; width: 430px; transform: translateX(-50%); } #turbo { right: calc(50% - 199px); } #brake { left: calc(50% - 199px); } }
 </style>
@@ -96,8 +108,9 @@
   <div class="prize"><small id="prizeMonth">À gagner ce mois-ci</small><b id="prizeTxt">Un essai d'une journée sur la moto de ton choix</b></div>
   <div class="how"><div><b>Glisse ← →</b><br>pour tourner</div><div><b>Frein</b><br>avant les virages</div><div><b>Turbo</b><br>jauge pleine</div><div><b>Checkpoints</b><br>+8 s</div></div>
   <button class="btn" id="play">Lancer le run</button>
+  <button class="btn ghost" id="podBtn">Voir le podium du mois</button>
   <div class="best" id="bestTxt"></div>
-  <div class="foot">Prototype Prception® pour Paris Est Moto · aucune donnée collectée</div>
+  <div class="foot"><a href="reglement.html">Règlement</a> · <a href="confidentialite.html">Confidentialité</a> · <a href="mentions-legales.html">Mentions légales</a></div>
 </section>
 
 <section id="end" class="screen veil">
@@ -117,11 +130,15 @@
   <p class="sub" id="fPrize">Lot : …</p>
   <form id="lead" novalidate>
     <label for="fName">Prénom</label><input id="fName" autocomplete="given-name" required maxlength="30">
-    <label for="fPhone">Téléphone ou e-mail</label><input id="fPhone" autocomplete="tel" required maxlength="60" inputmode="email">
+    <label for="fPhone">Téléphone</label><input id="fPhone" type="tel" autocomplete="tel" required maxlength="20" inputmode="tel" placeholder="06 12 34 56 78">
+    <label for="fMail">E-mail</label><input id="fMail" type="email" autocomplete="email" required maxlength="200" inputmode="email" placeholder="prenom@exemple.fr">
+    <input id="fWeb" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px">
     <label for="fModel">Le modèle que tu veux essayer</label>
     <select id="fModel"><option>Monster</option><option>Streetfighter V4</option><option>Panigale V4</option><option>Multistrada V4</option><option>Scrambler</option><option>DesertX</option><option>Diavel</option><option>Je ne sais pas encore</option></select>
-    <label class="check"><input type="checkbox" id="fOk"> J'accepte d'être recontacté·e par Paris Est Moto au sujet du concours et de mon essai.</label>
-    <div class="demo">Prototype : ce formulaire n'envoie encore rien. En production, il sera relié au CRM ou à la boîte mail de la concession, avec le règlement du jeu.</div>
+    <label class="check"><input type="checkbox" id="fOk"> <span>J'ai 18 ans ou plus et j'accepte le <a href="reglement.html" target="_blank">règlement du jeu</a> et la <a href="confidentialite.html" target="_blank">politique de confidentialité</a>. <b>(obligatoire)</b></span></label>
+    <label class="check"><input type="checkbox" id="fMk"> <span>J'accepte de recevoir les actualités, essais et offres de Paris Est Moto par e-mail, SMS ou téléphone. <i>(facultatif, retirable à tout moment)</i></span></label>
+    <p class="legal">Paris Est Moto traite ces données pour gérer ta participation au jeu, désigner le gagnant et, si tu l'as demandé, te recontacter pour un essai. Tu peux accéder à tes données, les rectifier ou les faire supprimer : <a href="confidentialite.html" target="_blank">en savoir plus</a>.</p>
+    <p class="ferr" id="fErr"></p>
     <button class="btn" type="submit">Valider</button>
     <button class="btn ghost" type="button" id="fBack">Retour</button>
   </form>
@@ -131,9 +148,17 @@
   <div class="kicker">C'est dans la boîte</div>
   <h1 class="title" style="font-size:44px">Merci<br><span id="tName"></span>&nbsp;!</h1>
   <p class="sub" id="tTxt">Ton score est inscrit au classement du mois.</p>
-  <div class="board"><h3>Classement du mois (démo)</h3><ol id="board"></ol></div>
-  <div class="demo" style="max-width:360px">Prototype : le classement n'existe que sur ce téléphone. En production, il sera partagé entre tous les joueurs.</div>
+  <div class="board"><h3 id="boardTitle">Podium du mois</h3><ol id="board"></ol><p class="sub" id="boardCount" style="margin-top:6px"></p></div>
   <button class="btn" id="tAgain">Améliorer mon score</button>
+</section>
+
+<section id="podium" class="screen veil">
+  <div class="kicker">Paris Est Moto · classement</div>
+  <h1 class="title" style="font-size:44px">Podium<br><span id="podMonth">du mois</span></h1>
+  <div class="podium3" id="pod3"></div>
+  <div class="board"><ol id="podList"></ol><p class="sub" id="podCount"></p></div>
+  <button class="btn" id="podPlay">Lancer le run</button>
+  <button class="btn ghost" id="podBack">Retour</button>
 </section>
 
 <section id="pitch" class="screen">
@@ -189,6 +214,69 @@ showBest();
    SON — moteur V4 synthétisé (allumages groupés par paires, distorsion,
    résonance d'échappement, admission, coupure aux rapports, pétarades)
    ===================================================================== */
+/* ---------- DSP du V4 (exécuté dans un AudioWorklet, ou ScriptProcessor en secours) ---------- */
+const V4SRC = String.raw`
+class V4DSP {
+  constructor(sr) {
+    this.sr = sr; this.A = 0; this.base = 0; this.next = 0; this.F = [0, 90, 290, 380];
+    this.rpm = 1900; this.trpm = 1900; this.thr = 0; this.tthr = 0; this.g = 0; this.tg = 0; this.cut = 0; this.crack = 0; this.crackLen = 1;
+    this.pt = [1e9, 1e9, 1e9, 1e9]; this.pa = [0, 0, 0, 0]; this.seed = 987654;
+    const ms = x => Math.max(2, Math.round(x * sr / 1000));
+    this.hd = [1.05, 1.32, 0.94, 1.21].map(x => ({ b: new Float32Array(ms(x)), i: 0 }));
+    this.cm = [[2.35, .62], [3.8, .5], [0.82, .38], [5.9, .35]].map(([x, fb]) => ({ b: new Float32Array(ms(x)), i: 0, fb, lp: 0 }));
+    this.dc = 0; this.dcx = 0; this.ia = 0; this.ib = 0; this.env = 0; this.wh = 0; this.sm = 0;
+  }
+  rnd() { this.seed = (this.seed * 1664525 + 1013904223) >>> 0; return this.seed / 4294967296; }
+  set(m) {
+    if (m.rpm !== undefined) this.trpm = m.rpm; if (m.thr !== undefined) this.tthr = m.thr; if (m.on !== undefined) this.tg = m.on;
+    if (m.cut) this.cut = Math.round(m.cut * this.sr / 1000);
+    if (m.pop) { this.crackLen = this.crack = Math.round(this.sr * (0.012 + this.rnd() * 0.03)); }
+  }
+  fire(c) {
+    const t = this.thr, r = this.rpm; let a = 0.16 + 0.84 * t;
+    a *= 0.82 + 0.36 * this.rnd();
+    if (this.cut > 0) a *= 0.03;
+    if (r > 13850 && this.rnd() < 0.5) a *= 0.04;
+    if (t < 0.06 && r > 4200) { a = 0.07 + 0.07 * this.rnd(); if (this.rnd() < 0.014) { this.crackLen = this.crack = Math.round(this.sr * (0.004 + this.rnd() * 0.014)); } }
+    if (r < 2600 && t < 0.1) a = 0.22 + 0.1 * this.rnd();
+    this.pa[c] = a; this.pt[c] = 0;
+  }
+  process(out, n) {
+    const sr = this.sr, k = 1 - Math.exp(-1 / (sr * 0.03)), kg = 1 - Math.exp(-1 / (sr * 0.05));
+    for (let s = 0; s < n; s++) {
+      this.rpm += (this.trpm - this.rpm) * k; this.thr += (this.tthr - this.thr) * k * 1.5; this.g += (this.tg - this.g) * kg;
+      if (this.cut > 0) this.cut--;
+      this.A += this.rpm / 60 * 360 / sr;
+      while (this.A >= this.base + this.F[this.next]) { this.fire(this.next); this.next++; if (this.next === 4) { this.next = 0; this.base += 720; } }
+      if (this.base > 72000) { this.A -= 72000; this.base -= 72000; }
+      const tau = sr * (0.00042 + 0.0011 * Math.pow(1900 / Math.max(this.rpm, 1900), 0.55));
+      let col = 0;
+      for (let c = 0; c < 4; c++) {
+        const t = this.pt[c]++; let p = 0;
+        if (t < tau * 9) { const u = t / tau; p = this.pa[c] * (u * Math.exp(1 - u) - 0.32 * (u / 3) * Math.exp(1 - u / 3)); p *= 1 + 0.18 * (this.rnd() - 0.5); }
+        const h = this.hd[c], d = h.b[h.i]; h.b[h.i] = p - 0.28 * d; h.i = (h.i + 1) % h.b.length; col += d;
+      }
+      if (this.crack > 0) { const e = this.crack / this.crackLen; col += (this.rnd() * 2 - 1) * 1.6 * e * e * (this.rnd() < 0.3 ? 1.8 : 1); this.crack--; }
+      let y = col * 0.9;
+      for (const m of this.cm) { const d = m.b[m.i]; m.lp += (d - m.lp) * 0.38; const v = col + m.fb * m.lp; m.b[m.i] = v; m.i = (m.i + 1) % m.b.length; y += v * 0.35; }
+      const ab = Math.abs(col); this.env += (ab - this.env) * (ab > this.env ? 0.05 : 0.002);
+      const f = Math.min(0.9, 2 * Math.sin(Math.PI * (700 + this.rpm * 0.11) / sr));
+      const nz = (this.rnd() * 2 - 1) * this.env; this.ia += f * this.ib; const hp = nz - this.ia - 0.35 * this.ib; this.ib += f * hp;
+      y += this.ib * (0.25 + 0.55 * this.thr);
+      this.wh += 2 * Math.PI * this.rpm / 60 * 4.7 / sr; if (this.wh > 6.283) this.wh -= 6.283;
+      y += Math.sin(this.wh) * 0.012 * (this.rpm / 14000);
+      const hx = y - this.dcx + 0.995 * this.dc; this.dcx = y; this.dc = hx;
+      const dr = 1.1 + 1.2 * this.thr; const o = Math.tanh(hx * 0.42 * dr) / Math.tanh(0.42 * dr + 0.3);
+      out[s] = o * 0.75 * this.g;
+    }
+  }
+}`;
+const V4WRAP = `
+class V4Node extends AudioWorkletProcessor {
+  constructor() { super(); this.d = new V4DSP(sampleRate); this.port.onmessage = e => this.d.set(e.data); }
+  process(ins, outs) { const o = outs[0][0]; if (o) this.d.process(o, o.length); return true; }
+}
+registerProcessor('v4', V4Node);`;
 const AU = {
   c: null, m: null, ok() { return this.c && this.c.state === 'running'; },
   init() {
@@ -201,37 +289,41 @@ const AU = {
     } catch (e) {}
   },
   buildEngine() {
-    const c = this.c;
-    const mkO = (type, g) => { const o = c.createOscillator(), gn = c.createGain(); o.type = type; gn.gain.value = g; o.connect(gn); return [o, gn]; };
-    const [o1, g1] = mkO('sawtooth', .5), [o2, g2] = mkO('square', .32), [o3, g3] = mkO('triangle', .55), [o4, g4] = mkO('sawtooth', .18);
-    const sum = c.createGain(); for (const g of [g1, g2, g3, g4]) g.connect(sum);
-    const pulse = c.createGain(); pulse.gain.value = .55; sum.connect(pulse);
-    const lfo = c.createOscillator(); lfo.type = 'square'; const lg = c.createGain(); lg.gain.value = .45; lfo.connect(lg); lg.connect(pulse.gain);
-    const ws = c.createWaveShaper(); const cur = new Float32Array(1024); for (let i = 0; i < 1024; i++) cur[i] = Math.tanh(3.2 * (i / 512 - 1)); ws.curve = cur; ws.oversample = '2x';
-    const body = c.createBiquadFilter(); body.type = 'peaking'; body.frequency.value = 130; body.gain.value = 9; body.Q.value = .9;
-    const bark = c.createBiquadFilter(); bark.type = 'peaking'; bark.frequency.value = 900; bark.gain.value = 5; bark.Q.value = 1.4;
-    const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 3;
-    const out = c.createGain(); out.gain.value = 0;
-    pulse.connect(ws); ws.connect(body); body.connect(bark); bark.connect(lp); lp.connect(out); out.connect(this.m);
-    const n = c.sampleRate * 2, nb = c.createBuffer(1, n, c.sampleRate), nd = nb.getChannelData(0); for (let i = 0; i < n; i++) nd[i] = Math.random() * 2 - 1;
-    const ns = c.createBufferSource(); ns.buffer = nb; ns.loop = true; const nf = c.createBiquadFilter(); nf.type = 'bandpass'; nf.Q.value = 2.5; const ng = c.createGain(); ng.gain.value = 0;
-    ns.connect(nf); nf.connect(ng); ng.connect(this.m);
-    for (const o of [o1, o2, o3, o4, lfo]) o.start(); ns.start();
-    this.E = { o1, o2, o3, o4, lfo, lp, out, nf, ng, cut: 0 };
+    /* Moteur « physique » : chaque explosion est un vrai coup de pression qui part dans
+       un collecteur puis un silencieux (guides d'onde). Ordre d'allumage du V4 Desmosedici
+       Stradale, dit « twin pulse » : 0°, 90°, 290°, 380° sur 720° de vilebrequin.
+       Cet allumage irrégulier donne le grondement si particulier, très différent d'un 4 en ligne. */
+    const c = this.c, self = this;
+    const post = (lp, body, out) => {
+      lp.type = 'lowpass'; lp.Q.value = .7; lp.frequency.value = 2500;
+      body.type = 'peaking'; body.frequency.value = 95; body.gain.value = 4; body.Q.value = .8;
+      out.gain.value = 0; lp.connect(body); body.connect(out); out.connect(self.m);
+    };
+    const lp = c.createBiquadFilter(), body = c.createBiquadFilter(), out = c.createGain(); post(lp, body, out);
+    this.E = { lp, out, cut: 0, send: () => {} };
+    const fallback = () => {
+      try {
+        const D = new (new Function(V4SRC + ';return V4DSP;')())(c.sampleRate), sp = c.createScriptProcessor(1024, 0, 1);
+        sp.onaudioprocess = e => { const b = e.outputBuffer.getChannelData(0); D.process(b, b.length); };
+        sp.connect(lp); this.E.send = m => D.set(m); this.E.node = sp;
+      } catch (e) {}
+    };
+    if (c.audioWorklet && window.AudioWorkletNode) {
+      const url = URL.createObjectURL(new Blob([V4SRC + V4WRAP], { type: 'application/javascript' }));
+      c.audioWorklet.addModule(url).then(() => {
+        const n = new AudioWorkletNode(c, 'v4', { numberOfInputs: 0, outputChannelCount: [1] });
+        n.connect(lp); this.E.send = m => n.port.postMessage(m); this.E.node = n;
+      }).catch(fallback);
+    } else fallback();
   },
   engine(rpm, thr, on) {
-    if (!this.E) return; const E = this.E, t = this.c.currentTime, fire = rpm / 60 * 2, k = .03;
-    E.o1.frequency.setTargetAtTime(fire, t, k); E.o2.frequency.setTargetAtTime(fire * .5, t, k);
-    E.o3.frequency.setTargetAtTime(fire * .25, t, k); E.o4.frequency.setTargetAtTime(fire * 1.004, t, k);
-    E.lfo.frequency.setTargetAtTime(fire * .5, t, k);
-    E.lp.frequency.setTargetAtTime(380 + thr * 2600 + rpm / 14000 * 2200, t, .04);
-    E.nf.frequency.setTargetAtTime(fire * 3.2, t, .05);
-    const cut = performance.now() < E.cut;
-    E.out.gain.setTargetAtTime(on ? (cut ? .015 : .07 + thr * .07 + rpm / 14000 * .03) : 0, t, cut ? .008 : .05);
-    E.ng.gain.setTargetAtTime(on ? thr * .045 * (.3 + rpm / 14000) : 0, t, .05);
+    if (!this.E) return; const E = this.E, t = this.c.currentTime;
+    E.send({ rpm, thr, on: on ? 1 : 0 });
+    E.lp.frequency.setTargetAtTime(1800 + thr * 5200 + rpm / 14000 * 3000, t, .05);
+    E.out.gain.setTargetAtTime(on ? .55 + thr * .25 : 0, t, .06);
   },
-  shift() { if (!this.E) return; this.E.cut = performance.now() + 85; this.noise(.06, .12, 1800); },
-  pop() { this.noise(.05 + Math.random() * .04, .28 + Math.random() * .2, 600 + Math.random() * 1400); },
+  shift() { if (this.E) this.E.send({ cut: 55, pop: 1 }); },
+  pop() { if (this.E) this.E.send({ pop: 1 }); },
   tone(fq, d, type, v, w, slide) {
     if (!this.ok()) return; const t = this.c.currentTime + (w || 0), o = this.c.createOscillator(), g = this.c.createGain();
     o.type = type || 'square'; o.frequency.setValueAtTime(fq, t); if (slide) o.frequency.exponentialRampToValueAtTime(fq * slide, t + d);
@@ -545,7 +637,7 @@ function updateGearbox(dt, thr) {
     else if (G.gear > 0 && kmh < GEARS[G.gear - 1] * .72) { G.gear--; AU.shift(); AU.pop(); G.rpm = Math.min(REDLINE, G.rpm * 1.25); }
   }
   G.popT -= dt;
-  if (thr === 0 && G.rpm > 6500 && G.popT <= 0) { G.popT = .07 + Math.random() * .16; AU.pop(); }
+  
   AU.engine(G.rpm, thr, G.state !== 'menu');
 }
 function spark(x, y, col, n, vy) { for (let k = 0; k < n && G.parts.length < 120; k++) G.parts.push({ x, y, vx: (Math.random() - .5) * 160, vy: -(vy || 80) * Math.random(), life: 0, max: .4 + Math.random() * .4, col, r: 1.5 + Math.random() * 2.5 }); }
@@ -573,7 +665,7 @@ function update(dt) {
   else G.speed += ACCEL * dt * (1.15 - sp * .4);
   const off = G.x < -1.05 || G.x > 1.05;
   if (off && G.speed > OFFMAX) { G.speed += OFFROAD * dt; G.shake = Math.max(G.shake, .2); if (Math.random() < dt * 30) spark(W / 2 + (Math.random() - .5) * 60, H * .92, '#8a6a3a', 2, 120); }
-  G.x = clamp(G.x, -1.6, 1.6); G.speed = clamp(G.speed, 0, maxv);
+  G.x = clamp(G.x, -1.32, 1.32); G.speed = clamp(G.speed, 0, maxv);
   G.lean += (G.steer * .45 * (.35 + sp) - G.lean) * Math.min(1, dt * 8);
   G.thr = thr; updateGearbox(dt, thr);
   G.pos = inc(G.pos, dt * G.speed, trackLen);
@@ -611,7 +703,14 @@ function updateCars(dt) {
    ===================================================================== */
 function quad(x1, y1, x2, y2, x3, y3, x4, y4, c) { ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.lineTo(x3, y3); ctx.lineTo(x4, y4); ctx.closePath(); ctx.fill(); }
 function drawSeg(p1, p2, dark, fogA) {
-  ctx.fillStyle = dark ? '#3a8a36' : '#43963e'; ctx.fillRect(0, p2.s.y, W, p1.s.y - p2.s.y);
+  const hh = p1.s.y - p2.s.y;
+  /* segments écrasés (< 2,5 px) : une seule teinte, sinon moiré « pixelisé » à l'horizon */
+  if (hh < 2.5) {
+    ctx.fillStyle = '#3f9039'; ctx.fillRect(0, p2.s.y, W, hh + .5);
+    quad(p1.s.x - p1.s.w * 1.1, p1.s.y, p1.s.x + p1.s.w * 1.1, p1.s.y, p2.s.x + p2.s.w * 1.1, p2.s.y + .5, p2.s.x - p2.s.w * 1.1, p2.s.y + .5, '#6a6a6e');
+    ctx.fillStyle = `rgba(240,196,170,${fogA})`; ctx.fillRect(0, p2.s.y, W, hh + .5); return;
+  }
+  ctx.fillStyle = dark ? '#3a8a36' : '#43963e'; ctx.fillRect(0, p2.s.y, W, hh);
   const v1 = p1.s.w * .55, v2 = p2.s.w * .55;
   quad(p1.s.x - p1.s.w - v1, p1.s.y, p1.s.x - p1.s.w, p1.s.y, p2.s.x - p2.s.w, p2.s.y, p2.s.x - p2.s.w - v2, p2.s.y, dark ? '#357d31' : '#3c8a37');
   quad(p1.s.x + p1.s.w + v1, p1.s.y, p1.s.x + p1.s.w, p1.s.y, p2.s.x + p2.s.w, p2.s.y, p2.s.x + p2.s.w + v2, p2.s.y, dark ? '#357d31' : '#3c8a37');
@@ -626,7 +725,7 @@ function drawSeg(p1, p2, dark, fogA) {
   if (fogA > 0) { ctx.fillStyle = `rgba(240,196,170,${fogA})`; ctx.fillRect(0, p2.s.y, W, p1.s.y - p2.s.y); }
 }
 function drawBarrier(s) {
-  const p1 = s.p1.s, p2 = s.p2.s; if (s.p1.c.z <= camDepth || p2.y >= s.clip) return;
+  const p1 = s.p1.s, p2 = s.p2.s; if (s.p1.c.z <= camDepth || p2.y >= s.clip || p1.y - p2.y < 1.5) return;
   const h1 = p1.scale * 210 * W / 2, h2 = p2.scale * 210 * W / 2;
   ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, s.clip); ctx.clip();
   for (const side of [-1, 1]) {
@@ -673,7 +772,9 @@ function drawBackground() {
     for (let rep = -1; rep < 2; rep++) { ctx.beginPath(); ctx.moveTo(rep * W * 2 - hx, hy + 4); for (let i = 0; i <= 24; i++) ctx.lineTo(rep * W * 2 - hx + i * W * .0834, hy - H * base - Math.sin(i * 1.3 + amp * 100) * H * amp * .6 - Math.sin(i * .5) * H * amp * .5); ctx.lineTo(rep * W * 2 - hx + W * 2, hy + 4); ctx.fill(); }
   }
 }
+let frameNo = 0;
 function render() {
+  frameNo++;
   if (G.state === 'intro') { drawIntro(); return; }
   const sx = (Math.random() - .5) * G.shake * 10, sy = (Math.random() - .5) * G.shake * 8;
   ctx.setTransform(DPR, 0, 0, DPR, sx * DPR, sy * DPR);
@@ -687,13 +788,15 @@ function render() {
     project(s.p2, G.x * RW - x - dx, py + CAMH, G.pos - (s.looped ? trackLen : 0), W, H);
     x += dx; dx += s.curve;
     if (s.p1.c.z <= camDepth || s.p2.s.y >= s.p1.s.y || s.p2.s.y >= maxy) continue;
-    drawSeg(s.p1, s.p2, s.dark, Math.min(.6, Math.pow(n / DRAW, 3) * 1.2));
-    maxy = s.p1.s.y;
+    drawSeg(s.p1, s.p2, s.dark, Math.min(.75, Math.pow(n / DRAW, 2.2) * 1.1));
+    maxy = s.p1.s.y; s.seen = frameNo;
   }
   const flagFrame = Math.floor(G.t * 6) % 2;
   for (let n = DRAW - 1; n > 0; n--) {
     const s = segs[(base.i + n) % segs.length];
-    drawBarrier(s);
+    if (s.p1.c.z <= camDepth) continue;
+    const fade = clamp((DRAW - n) / 50, 0, 1); ctx.globalAlpha = fade;
+    if (n < 90 && s.seen === frameNo) drawBarrier(s);
     for (const o of s.sprites) {
       if (o.pick && o.taken) continue;
       const sc = s.p1.s.scale, X = s.p1.s.x + sc * o.x * RW * W / 2, Y = s.p1.s.y;
@@ -706,6 +809,7 @@ function render() {
       drawSprite(c.spr, sc, s.p1.s.x + (s.p2.s.x - s.p1.s.x) * t + sc * c.x * RW * W / 2, s.p1.s.y + (s.p2.s.y - s.p1.s.y) * t, -.5, s.clip);
     }
   }
+  ctx.globalAlpha = 1;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   if (G.speed > MAXV * .82 || G.boost > 0) speedLines();
   drawBike();
@@ -820,26 +924,58 @@ function showEnd() {
 $('play').addEventListener('click', () => { AU.init(); startRun(); });
 $('again').addEventListener('click', () => { AU.init(); startRun(); });
 $('tAgain').addEventListener('click', () => { AU.init(); startRun(); });
-$('enter').addEventListener('click', () => { $('fKick').textContent = 'Concours du mois · Paris Est Moto'; show('form'); });
+$('enter').addEventListener('click', () => { G.intent = 'concours'; $('fKick').textContent = 'Concours du mois · Paris Est Moto'; show('form'); });
 $('fBack').addEventListener('click', () => show('end'));
-$('essai').addEventListener('click', () => { show('form'); $('fKick').textContent = 'Réservation d’essai · Paris Est Moto'; });
+$('essai').addEventListener('click', () => { G.intent = 'essai'; show('form'); $('fKick').textContent = 'Réservation d’essai · Paris Est Moto'; });
 $('share').addEventListener('click', async () => {
   const t = `J'ai fait ${G.last ? G.last.score.toLocaleString('fr-FR') : 0} pts sur le run Paris Est Moto. Tu fais mieux ?`, u = location.href.split('?')[0];
   try { if (navigator.share) await navigator.share({ title: 'Paris Est Moto — le run', text: t, url: u }); else { await navigator.clipboard.writeText(t + ' ' + u); $('share').textContent = 'Lien copié'; } } catch (e) {}
 });
-$('lead').addEventListener('submit', e => {
-  e.preventDefault();
-  const name = $('fName').value.trim(), contact = $('fPhone').value.trim();
-  const okC = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact) || contact.replace(/[^\d]/g, '').length >= 10;
-  if (!name) { $('fName').focus(); return; }
-  if (!okC) { $('fPhone').setCustomValidity('Téléphone ou e-mail valide'); $('fPhone').reportValidity(); $('fPhone').setCustomValidity(''); return; }
-  if (!$('fOk').checked) { $('fOk').focus(); $('fOk').parentElement.style.color = '#ff8a8a'; return; }
-  const board = store.get('board', []), sc = G.last ? G.last.score : 0, me = { n: name.slice(0, 14), s: sc, me: Date.now() };
-  board.push(me); board.sort((a, b) => b.s - a.s); store.set('board', board.slice(0, 10));
+/* ---------------- podium partagé (API Paris Est Moto) ---------------- */
+const API = 'https://paris-est-moto-api.alanducatez1.workers.dev';
+const POLICY_VERSION = '2026-10';
+const escH = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+let myId = store.get('myIds', []);
+async function fetchPodium() {
+  const r = await fetch(API + '/api/podium', { cache: 'no-store' }); if (!r.ok) throw new Error(r.status); return r.json();
+}
+function rows(top, n) { return top.slice(0, n).map((b, i) => `<li class="${myId.includes(b.id) ? 'me' : ''}"><span>${i + 1}. ${escH(b.prenom)}</span><span>${b.score.toLocaleString('fr-FR')} pts</span></li>`).join(''); }
+async function showPodium() {
+  show('podium'); $('podMonth').textContent = MONTHS[new Date().getMonth()];
+  $('pod3').innerHTML = ''; $('podList').innerHTML = '<li><span>Chargement…</span></li>'; $('podCount').textContent = '';
+  try {
+    const d = await fetchPodium(), t = d.top;
+    $('pod3').innerHTML = [[1, 'p2'], [0, 'p1'], [2, 'p3']].map(([i, c]) => t[i] ? `<div class="p ${c}"><div class="n">${escH(t[i].prenom)}</div><div class="s">${t[i].score.toLocaleString('fr-FR')} pts</div><div class="b">${i + 1}</div></div>` : `<div class="p ${c}"><div class="n">—</div><div class="s">&nbsp;</div><div class="b">${i + 1}</div></div>`).join('');
+    $('podList').innerHTML = t.length > 3 ? rows(t, 10).split('</li>').slice(3).join('</li>') : (t.length ? '' : '<li><span>Personne encore : prends la première place !</span></li>');
+    $('podCount').textContent = d.players ? `${d.players} pilote${d.players > 1 ? 's' : ''} inscrit${d.players > 1 ? 's' : ''} ce mois-ci` : '';
+  } catch (e) { $('podList').innerHTML = '<li><span>Podium indisponible (pas de connexion)</span></li>'; }
+}
+$('podBtn').addEventListener('click', showPodium);
+$('podBack').addEventListener('click', () => show('start'));
+$('podPlay').addEventListener('click', () => { AU.init(); startRun(); });
+let sending = false;
+$('lead').addEventListener('submit', async e => {
+  e.preventDefault(); if (sending) return;
+  const err = m => { $('fErr').textContent = m; };
+  const name = $('fName').value.trim(), phone = $('fPhone').value.trim(), mail = $('fMail').value.trim();
+  if (!name) { err('Indique ton prénom.'); $('fName').focus(); return; }
+  if (phone.replace(/\D/g, '').length < 9) { err('Numéro de téléphone incomplet.'); $('fPhone').focus(); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(mail)) { err('Adresse e-mail invalide.'); $('fMail').focus(); return; }
+  if (!$('fOk').checked) { err('Coche la case obligatoire pour participer.'); $('fOk').focus(); return; }
+  err(''); sending = true; const btn = $('lead').querySelector('button[type=submit]'); btn.textContent = 'Envoi…';
+  const sc = G.last ? G.last.score : 0;
+  const body = { prenom: name, phone, email: mail, score: sc, model: $('fModel').value, intent: G.intent || 'concours', consentRules: true, consentMarketing: $('fMk').checked, consentText: $('fOk').parentElement.textContent.trim() + ($('fMk').checked ? ' | ' + $('fMk').parentElement.textContent.trim() : ''), policyVersion: POLICY_VERSION, website: $('fWeb').value };
+  try {
+    const r = await fetch(API + '/api/score', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+    const d = await r.json(); if (!r.ok) throw new Error(d.error || r.status);
+    myId.push(d.id); store.set('myIds', myId.slice(-20));
+  } catch (x) { sending = false; btn.textContent = 'Valider'; err('Envoi impossible. Vérifie ta connexion et réessaie.'); return; }
+  sending = false; btn.textContent = 'Valider';
   $('tName').textContent = name.slice(0, 14);
-  $('tTxt').textContent = `Prototype : en vrai, Paris Est Moto te recontacte pour « ${$('fModel').value} » et le lot du mois.`;
-  $('board').innerHTML = board.slice(0, 5).map((b, i) => `<li class="${b.me === me.me ? 'me' : ''}"><span>${i + 1}. ${b.n.replace(/[<>&]/g, '')}</span><span>${b.s.toLocaleString('fr-FR')} pts</span></li>`).join('');
+  $('tTxt').textContent = G.intent === 'essai' ? `Paris Est Moto te recontacte pour ton essai « ${$('fModel').value} ».` : 'Ton score est inscrit au podium du mois. Le meilleur score à la fin du mois remporte le lot !';
+  $('board').innerHTML = '<li><span>Chargement…</span></li>'; $('boardCount').textContent = '';
   show('thanks');
+  try { const d = await fetchPodium(); const i = d.top.findIndex(b => myId.includes(b.id)); $('board').innerHTML = rows(d.top, 5); $('boardCount').textContent = i >= 5 ? `Ta place : ${i + 1}e sur ${d.players}` : `${d.players} pilote${d.players > 1 ? 's' : ''} ce mois-ci`; } catch (x) { $('board').innerHTML = ''; }
 });
 function renderChips() {
   $('chips').innerHTML = PRIZES.map((p, i) => `<button class="chip ${p === CFG.prize ? 'sel' : ''}" data-i="${i}">${p}</button>`).join('');
