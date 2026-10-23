@@ -1019,7 +1019,7 @@ $('gear').addEventListener('click', () => { renderChips(); $('pCustom').value = 
 $('pSave').addEventListener('click', () => { const c = $('pCustom').value.trim(); if (c) CFG.prize = c; try { localStorage.setItem('rde_cfg', JSON.stringify({ prize: CFG.prize })); } catch (e) {} applyCfg(); show('start'); });
 
 /* ---------------- aide à la prise en main : faux pouces transparents ----------------
-   Pendant le compte à rebours et les premières secondes (3 premières parties) :
+   Uniquement au démarrage de la partie (compte à rebours), puis fondu au « GO ! » :
    pouce gauche posé sur FREIN (onde de pression), pouce droit qui glisse pour tourner.
    Dessinés sur un calque au-dessus des boutons, sans bloquer les touchers. */
 const hc = $('hint'), hx = hc.getContext('2d'), hctx = hx;
@@ -1037,8 +1037,9 @@ function ghostThumb(x, y, ang, sc, a, press, c) {
 function hintText(t, x, y, a) { hx.save(); hx.globalAlpha = a; hx.font = 'italic 800 17px "Saira Condensed", sans-serif'; hx.textAlign = 'center'; hx.textBaseline = 'middle'; hx.lineWidth = 4; hx.strokeStyle = 'rgba(0,0,0,.6)'; hx.lineJoin = 'round'; hx.strokeText(t, x, y); hx.fillStyle = '#fff'; hx.fillText(t, x, y); hx.restore(); }
 let hintOn = false;
 function thumbsHint() {
-  const el = G.t - (G.hintT0 || 0), act = G.hints < 3 && (G.state === 'count' || G.state === 'run');
-  const a = act ? clamp(1 - (el - 7.4) / 1.2, 0, 1) * clamp(el / .5, 0, 1) : 0;
+  /* visibles uniquement pendant le compte à rebours ; fondu au « GO ! » */
+  const el = G.t - (G.hintT0 || 0), act = G.state === 'count' || G.state === 'run';
+  const a = act ? clamp(1 - (el - 3.2) / .4, 0, 1) * clamp(el / .4, 0, 1) : 0;
   if (a <= 0) { if (hintOn) { hx.setTransform(1, 0, 0, 1, 0, 0); hx.clearRect(0, 0, hc.width, hc.height); hintOn = false; } return; }
   hintOn = true; hx.setTransform(1, 0, 0, 1, 0, 0); hx.clearRect(0, 0, hc.width, hc.height); hx.setTransform(DPR, 0, 0, DPR, 0, 0);
   const cr = hc.getBoundingClientRect(), br = $('brake').getBoundingClientRect(), sc = Math.min(1.15, W / 390);
